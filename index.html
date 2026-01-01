@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>UPLCC-APIs</title>
+    <style>
+      *{
+        margin:0;
+        padding:0;
+      }
+      #topd{
+        position:fixed;
+        z-index:100;
+        top:0;
+        left:0;
+        width:100vw;
+        height:50px;
+        background-color:rgba(255,255,255,0.3);
+        backdrop-filter:blur(10px);
+        overflow:hidden;
+        box-shadow:0 0 5px 5px rgba(0,0,0,0.1);
+      }
+      #logo{
+        position:absolute;
+        height:40px;
+        top:50%;
+        left:4px;
+        transform:translate(0%,-50%);
+      }
+      #tips{
+        position:absolute;
+        top:50%;
+        transform:translate(0%,-50%);
+        right:8px;
+        width:45px;
+        height:30px;
+        border-radius:8px;
+        border:0px solid gray;
+        background-color:rgba(0,0,0,0.07);
+      }
+      .gotourl{
+        color:#81c0ff;
+      }
+      #tipdiv{
+        position:absolute;
+        z-index:150;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        width:80vw;
+        max-width:700px;
+        min-height:70px;
+        max-height:60vh;
+        overflow-y:auto;
+        padding:8px;
+        border-radius:8px;
+        background-color:rgba(255,255,255,1);
+        box-shadow:0 0 5px 5px rgba(0,0,0,0.1);
+        display:none;
+        box-sizing:border-box;
+      }
+      #tipok{
+        position:relative;
+        background-color:rgba(0,0,0,0.8);
+        color:white;
+        border:0px solid black;
+        width:50px;
+        height:30px;
+        display:block;
+        float:right;
+        border-radius:4px;
+        margin-top:4px;
+      }
+      #tipno{
+        position:relative;
+        background-color:rgba(0,0,0,0.05);
+        color:black;
+        border:0px solid white;
+        width:50px;
+        height:30px;
+        display:block;
+        float:right;
+        margin-right:8px;
+        border-radius:4px;
+        margin-top:4px;
+      }
+      #cont{
+        margin-top:50px;
+        padding:8px;
+        width:100vw;
+        display:flex;
+        flex-wrap:wrap;
+        box-sizing:border-box;
+      }
+      .apidiv{
+        border-radius:8px;
+        background-color:rgba(0,0,0,0.03);
+        margin:8px;
+        padding:8px;
+        flex:1 1 auto;
+        min-height:70px;
+      }
+      #ground{
+        position:fixed;
+        z-index:140;
+        width:100vw;
+        height:100vh;
+        top:0;
+        left:0;
+        pointer-events:none;
+        background-color:rgba(0,0,0,0);
+        backdrop-filter:blur(0px);
+        transition:all 0.3s ease;
+      }
+      #loading{
+        position:fixed;
+        z-index:500;
+        width:100vw;
+        height:100vh;
+        background-color:white;
+        top:0;
+        left:0;
+        transition:opacity 0.5s ease;
+      }
+      #loadtext{
+        position:absolute;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        pointer-events:auto;
+        opacity:1;
+      }
+      #edit{
+        position:absolute;
+        z-index:300;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        width:80vw;
+        max-width:500px;
+        min-height:300px;
+        max-height:60vh;
+        overflow-y:auto;
+        padding:8px;
+        border-radius:8px;
+        background-color:rgba(255,255,255,1);
+        box-shadow:0 0 5px 5px rgba(0,0,0,0.1);
+        display:block;
+        box-sizing:border-box;
+        display:none;
+      }
+      #editfilter{
+        position:fixed;
+        z-index:210;
+        width:100vw;
+        height:100vh;
+        top:0;
+        left:0;
+        background-color:rgba(0,0,0,0.2);
+        backdrop-filter:blur(5px);
+        display:none;
+      }
+      #editinput{
+        position:absolute;
+        width:65%;
+        height:30px;
+        left:10%;
+        padding:2px;
+        box-sizing:border-box;
+      }
+      #editbutton{
+        position:absolute;
+        width:15%;
+        height:30px;
+        left:75%;
+      }
+      #editcode{
+        position:absolute;
+        overflow-x:auto;
+        left:50%;
+        width:96%;
+        min-height:20px;
+        background-color:rgba(0,0,0,0.05);
+        border-radius:4px;
+        transform:translate(-50%,0%);
+        padding:4px;
+        box-sizing:border-box;
+      }
+    </style>
+  </head>
+  <body>	
+    <div id="loading"><h3 id="loadtext">等待资源加载完成...</h3></div>
+	<div id="topd">
+      <img src="logo.png" id="logo"/>
+      <button onclick="ts();" id="tips">公告</button>
+    </div>
+    <div id="tipdiv">
+      <h3 id="tiptitle"></h3>
+      <p id="tipmsg"></p>
+      <button id="tipok" onclick="ontip({msg:'click'},200);">确定</button>
+      <button id="tipno" onclick="ontip({msg:'click'},300);">取消</button>
+    </div>
+    <div id="edit">
+      <h3>在线调试</h3>
+      <h4 style="margin-top:8px;">请求URL</h4>
+      <input type="text" placeholder="请求的链接" id="editinput"/>
+      <button id="editbutton" onclick="if(editinput.value&&editinput.value.startsWith('http')){edittext.textContent='正在请求...';fetch(editinput.value).then(res=>res.text()).then(data=>document.getElementById('edittext').textContent=data);}">请求</button>
+      <h4 style="margin-top:34px;">返回结果</h4>
+      <div id="editcode"><pre id="edittext">等待进行请求...</pre></div>
+    </div>
+    <div id="editfilter" onclick="offedit();"></div>
+    <div id="ground"></div>
+    <div id="cont"></div>
+  </body>
+  <script src="apis.js"></script>
+  <script>
+    const img=document.getElementById('logo');
+    const cover=document.getElementById('loading');
+    function hideLoading(){
+      cover.style.pointerEvents='none';
+      cover.style.opacity='0';
+    }
+    if(img.complete){
+      hideLoading();
+    }else{
+      img.addEventListener('load',hideLoading);
+      img.addEventListener('error',hideLoading);
+    }
+    const tiptext=tipstext;
+    function changestr(str){
+      str=str
+        .replace(/&/g,"&amp;")
+        .replace(/<url>([\S\s]+?)<\/url>/g,`<span class="gotourl" onclick="window.open('$1','_blank');">$1</span>`)
+        .replace(/<res>([\s\S]+?)<\/res>/g,`<div style="display:inline-block;background-color:rgba(0,0,0,0.05);border-radius:4px;"><pre style="white-space:pre-wrap;">$1</pre></div>`)
+        .replace(/<resurl>([\s\S]+?)<\/resurl>/g,`<pre style="white-space:pre-wrap;color:#81c0ff;" onclick="editonline(this.innerText);">$1</pre>`);;
+      return str;
+    }
+    function ts(){
+      const res=changestr(tiptext);
+      ontip({title:"公告",msg:res},0);
+    }
+    function ontip(arr,num){
+      const tipdiv=document.getElementById("tipdiv");
+      const tiptitle=document.getElementById("tiptitle");
+      const tipmsg=document.getElementById("tipmsg");
+      const ground=document.getElementById("ground");
+      tipno.style.display="block";
+      tipok.innerText="确定";
+      if(arr.msg=="click"&&num>=200){
+        tipdiv.style.display="none";
+        ground.style.pointerEvents="none";
+        ground.style.backgroundColor="rgba(0,0,0,0)";
+        ground.style.backdropFilter="blur(0px)";
+        return;
+      }
+      if(!arr.msg)return;
+      if(!num)num=0;
+      if(num==1)tipno.style.display="none";
+      if(num==2&&arr.txt){
+        tipok.innerText=arr.txt;
+        tipno.style.display="none";
+      }
+      if(!arr.title)arr.title="提示";
+      const title=arr.title;
+      const msg=arr.msg;
+      tipdiv.style.display="block";
+      tiptitle.innerText=title;
+      tipmsg.innerHTML=msg;
+      ground.style.pointerEvents="auto";
+      ground.style.backgroundColor="rgba(0,0,0,0.3)";
+      ground.style.backdropFilter="blur(10px)";
+    }
+    const cont=document.getElementById('cont');
+    apilist.forEach(data => {
+      let result = '<br>';
+      result += `<h4>请求链接</h4><resurl>${data.url}</resurl><br><br>`;
+      result += `<h4>示例链接</h4><resurl>${data.eg}</resurl><br><br><h4>参数</h4>`;
+      data.res.forEach(r => result += r + '<br>');
+      result += `<br><h4>返回示例</h4><res>${data.ret}</res>`;
+      result = changestr(result);
+      const div = document.createElement('div');
+      div.className = 'apidiv';
+      div.innerHTML = `<h3>${data.name}</h3><p style="color:gray;">${data.alt}</p>`;
+      div.dataset.detail = result;
+      div.addEventListener('click',()=>ontip({
+        title:'API详情',
+        msg:div.dataset.detail,
+        txt:'关闭'
+      }, 2));
+      cont.appendChild(div);
+    });
+    function editonline(url){
+      if(!url)return;
+      url=url.trim();
+      const edit=document.getElementById("edit");
+      const editinput=document.getElementById("editinput");
+      const editfilter=document.getElementById("editfilter");
+      edit.style.display="block";
+      editfilter.style.display="block";
+      editinput.value=url;
+    }
+    function offedit(){
+      const edit=document.getElementById("edit");
+      const editinput=document.getElementById("editinput");
+      const editfilter=document.getElementById("editfilter");
+      edit.style.display="none";
+      editfilter.style.display="none";
+    }
+  </script>
+</html>
