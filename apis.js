@@ -4,7 +4,7 @@ const apilist=[
 name:"Xiaomi MiMo-V2-Flash",
 alt:"小米MiMo大模型。",
 url:"https://uplccapi.deno.dev/mimo",
-eg:"https://uplccapi.deno.dev/mimo?key=${API_KEY}&msg=你好&id=1234567890",
+eg:"https://uplccapi.deno.dev/mimo?key=${API_KEY}&msg=你好&maxtokens=8192",
 res:[
 "<res>key</res>必填，API密钥，可以自行前往<url>https://platform.xiaomimimo.com/</url>创建",
 "<res>msg</res>必填，询问MiMo的内容",
